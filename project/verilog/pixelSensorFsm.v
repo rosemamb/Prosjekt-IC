@@ -34,7 +34,10 @@ module pixelSensorFsm(
                        input  logic      reset,
                        output logic erase,
                        output logic expose,
-                       output logic read,
+                       output logic read1,
+                       output logic read2,
+                       output logic read3,
+                       output logic read4,
                       output logic convert
 
                       );
@@ -44,12 +47,15 @@ module pixelSensorFsm(
    parameter integer c_erase = 5;
    parameter integer c_expose = 255;
    parameter integer c_convert = 255;
-   parameter integer c_read = 5;
+   parameter integer c_read1 = 5;
+   parameter integer c_read2 = 5;
+   parameter integer c_read3 = 5;
+   parameter integer c_read4 = 5;
 
    //------------------------------------------------------------
    // State Machine
    //------------------------------------------------------------
-   parameter ERASE=0, EXPOSE=1, CONVERT=2, READ=3, IDLE=4;
+   parameter ERASE=0, EXPOSE=1, CONVERT=2, READ1=3, READ2=4, READ3=5, READ4=6; IDLE=4;
 
 
    logic               convert_stop;
@@ -62,31 +68,73 @@ module pixelSensorFsm(
       case(state)
         ERASE: begin
            erase <= 1;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 0;
            convert <= 0;
         end
         EXPOSE: begin
            erase <= 0;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 1;
            convert <= 0;
         end
         CONVERT: begin
            erase <= 0;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 0;
            convert = 1;
         end
-        READ: begin
+        READ1: begin
            erase <= 0;
-           read <= 1;
+           read1 <= 1;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
+           expose <= 0;
+           convert <= 0;
+        end
+        READ2: begin
+           erase <= 0;
+           read1 <= 0;
+           read2 <= 1;
+           read3 <= 0;
+           read4 <= 0;
+           expose <= 0;
+           convert <= 0;
+        end
+        READ3: begin
+           erase <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 1;
+           read4 <= 0;
+           expose <= 0;
+           convert <= 0;
+        end
+        READ4: begin
+           erase <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 1;
            expose <= 0;
            convert <= 0;
         end
         IDLE: begin
            erase <= 0;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 0;
            convert <= 0;
 

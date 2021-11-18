@@ -1,3 +1,4 @@
 
 pixelSensor.v
+pixelArray.v
 pixelSensor_tb.v

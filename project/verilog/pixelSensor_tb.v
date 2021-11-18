@@ -64,16 +64,20 @@ module pixelSensor_tb;
    //Digital
    logic              erase;
    logic              expose;
-   logic              read;
+   logic              read1;
+   logic              read2;
+   logic              read3;
+   logic              read4;
+
    tri[7:0]         pixData; //  We need this to be a wire, because we're tristating it
 
    //Instanciate the pixel
-   PIXEL_SENSOR  #(.dv_pixel(dv_pixel))  ps1(anaBias1, anaRamp, anaReset, erase,expose, read,pixData);
+   pixArray  #(.dv_pixel(dv_pixel))  ps1(anaBias1, anaRamp, anaReset, erase, expose, read1, read2, read3, read4, pixData1 ,pixData2 ,pixData3 ,pixData4);
 
    //------------------------------------------------------------
    // State Machine
    //------------------------------------------------------------
-   parameter ERASE=0, EXPOSE=1, CONVERT=2, READ=3, IDLE=4;
+   parameter ERASE=0, EXPOSE=1, CONVERT=2, READ1=3, READ2=4, READ3=5, READ4=6, IDLE=7;
 
    logic               convert;
    logic               convert_stop;
@@ -84,38 +88,83 @@ module pixelSensor_tb;
    parameter integer c_erase = 5;
    parameter integer c_expose = 255;
    parameter integer c_convert = 255;
-   parameter integer c_read = 5;
+   parameter integer c_read1 = 5;
+   parameter integer c_read2 = 5;
+   parameter integer c_read3 = 5;
+   parameter integer c_read4 = 5;
 
    // Control the output signals
    always_ff @(negedge clk ) begin
       case(state)
         ERASE: begin
            erase <= 1;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 0;
            convert <= 0;
         end
         EXPOSE: begin
            erase <= 0;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 1;
            convert <= 0;
         end
         CONVERT: begin
            erase <= 0;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 0;
-           convert = 1;
+           convert <= 1;
         end
-        READ: begin
+        READ1: begin
            erase <= 0;
-           read <= 1;
+           read1 <= 1;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
+           expose <= 0;
+           convert <= 0;
+        end
+         READ2: begin
+           erase <= 0;
+           read1 <= 0;
+           read2 <= 1;
+           read3 <= 0;
+           read4 <= 0;
+           expose <= 0;
+           convert <= 0;
+        end
+         READ3: begin
+           erase <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 1;
+           read4 <= 0;
+           expose <= 0;
+           convert <= 0;
+        end
+         READ4: begin
+           erase <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 1;
            expose <= 0;
            convert <= 0;
         end
         IDLE: begin
            erase <= 0;
-           read <= 0;
+           read1 <= 0;
+           read2 <= 0;
+           read3 <= 0;
+           read4 <= 0;
            expose <= 0;
            convert <= 0;
 
@@ -133,7 +182,7 @@ module pixelSensor_tb;
          state = IDLE;
          next_state = ERASE;
          counter  = 0;
-         convert  = 0;
+         convert  = 0; 
       end
       else begin
          case (state)
@@ -151,12 +200,27 @@ module pixelSensor_tb;
            end
            CONVERT: begin
               if(counter == c_convert) begin
-                 next_state <= READ;
+                 next_state <= READ1;
                  state <= IDLE;
               end
            end
-           READ:
-             if(counter == c_read) begin
+           READ1:
+             if(counter == c_read1) begin
+                state <= IDLE;
+                next_state <= READ2;
+             end
+            READ2:
+             if(counter == c_read2) begin
+                state <= IDLE;
+                next_state <= READ3;
+             end
+            READ3:
+             if(counter == c_read3) begin
+                state <= IDLE;
+                next_state <= READ4;
+             end
+            READ4:
+             if(counter == c_read4) begin
                 state <= IDLE;
                 next_state <= ERASE;
              end
@@ -185,7 +249,10 @@ module pixelSensor_tb;
    assign anaBias1 = expose ? clk : 0;
 
    // If we're not reading the pixData, then we should drive the bus
-   assign pixData = read ? 8'bZ: data;
+   assign pixData1 = read1 ? 8'bZ: data;
+   assign pixData2 = read2 ? 8'bZ: data;
+   assign pixData3 = read3 ? 8'bZ: data;
+   assign pixData4 = read4 ? 8'bZ: data;
 
    // When convert, then run a analog ramp (via anaRamp clock) and digtal ramp via
    // data bus.
@@ -204,17 +271,31 @@ module pixelSensor_tb;
    //------------------------------------------------------------
    // Readout from databus
    //------------------------------------------------------------
-   logic [7:0] pixelDataOut;
+   logic [7:0] pixelDataOut1;
+   logic [7:0] pixelDataOut2;
+   logic [7:0] pixelDataOut3;
+   logic [7:0] pixelDataOut4;
    always_ff @(posedge clk or posedge reset) begin
       if(reset) begin
-         pixelDataOut = 0;
+         pixelDataOut1 = 0;
+         pixelDataOut2 = 0;
+         pixelDataOut3 = 0;
+         pixelDataOut4 = 0;
       end
       else begin
-         if(read)
-           pixelDataOut <= pixData;
-      end
-   end
+         if(read1)
+           pixelDataOut1 <= pixData1;
 
+         if(read2)
+         pixelDataOut2 <= pixData2;
+
+         if(read3)
+         pixelDataOut3 <= pixData3;
+
+         if(read4)
+         pixelDataOut4 <= pixData4;
+   end
+   end
    //------------------------------------------------------------
    // Testbench stuff
    //------------------------------------------------------------
